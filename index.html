@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Imagen</title>
+</head>
+<body>
+    <form id="Foto">
+        <label for="region">Endpoint Region</label>
+        <input type="text" name="region" id="region">
+        <br>
+        <label for="nombre">Endpoint Nombre</label>
+        <input type="text" name="nombre" id="nombre">
+        <br>
+        <label for="foto">Fotografía</label>
+        <input type="file" name="foto" id="foto">
+        <br>
+        <input type="submit" value="Enviar">
+        <br>
+    </form>
+    <br>
+    <div id="state"></div>
+    <div id="respuesta"></div>
+</body>
+<script>
+    let form = document.getElementById("Foto");
+    let text = document.getElementById("state");
+    let respuesta = document.getElementById("respuesta");
+
+    form.onsubmit = function(e){
+        e.preventDefault();
+        let formdata = new FormData(form);
+        let prediction = new XMLHttpRequest();
+        let savePrediction = new XMLHttpRequest();
+
+        // Evento asincrono activado por cambio de estado de objeto xhr
+        savePrediction.onreadystatechange = function(){
+                    if (savePrediction.readyState == 4 && savePrediction.status == 200){
+                        console.log(savePrediction.responseText);
+                        alert("Data enviada satisfactoriamente");
+                    }
+                }
+
+        prediction.onreadystatechange = function(){
+            // state 0->Sin Enviar, 1->Abierto(luego de open), 2->Cabeceras Disponibles(luego de send), 3->Cargando(la respuesta no esta completa), 4->Lista
+            // status 
+            if (prediction.readyState==4 && prediction.status==200){
+                var data = JSON.parse(prediction.responseText);
+
+                respuesta.innerHTML="<h3>Endpoint: </h3>"+data.name+"  "+data.region+"<br>"+"<h3>Foto: </h3>"+data.foto+"<h3>Contador: </h3>"+data.contador;
+                
+                savePrediction.open("POST","save.php");
+                // console.log(data);   
+                savePrediction.send(data.name);
+            }
+        }
+
+        prediction.open("POST","foto.php");
+        prediction.send(formdata);
+        text.innerHTML = '<p>Enviado</p>';
+        form.reset();
+    }
+
+
+</script>
+</html>
